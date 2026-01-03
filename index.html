@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr" class="dark">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OpenSpeedy - 开源免费游戏变速工具，加速游戏与网盘下载</title>
+  <meta name="keywords" content="OpenSpeedy, 游戏变速, 网盘加速, 开源工具, Windows加速" />
+  <meta name="description" content="OpenSpeedy 是一款开源免费的游戏变速工具，可突破游戏帧率限制，提升游戏流畅度，同时对百度网盘等网盘下载有显著加速效果。支持 Windows 10 及以上系统，采用 Ring3 层 Hook 技术，安全稳定，兼容性强。" />
+
+  <link rel="shortcut icon" href="./files/openspeedy.png">
+  <link rel="preload stylesheet" href="./files/style.9b4b7f3f.css" as="style">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#FF4D4F',
+            secondary: '#FF7A45',
+            dark: '#1E1E2E',
+            light: '#F5F5F5',
+            'dark-gray': '#4E4E5E',
+            'light-gray': '#E5E5E5'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .nav-link {
+        @apply relative text-dark-gray hover:text-primary transition-colors duration-300;
+      }
+      .nav-link::after {
+        @apply content-[''] absolute w-0 h-0.5 bg-primary left-0 -bottom-1 transition-all duration-300;
+      }
+      .nav-link:hover::after {
+        @apply w-full;
+      }
+      .nav-link.active {
+        @apply text-primary font-medium;
+      }
+      .nav-link.active::after {
+        @apply w-full;
+      }
+      .btn-primary {
+        @apply bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5;
+      }
+      .btn-secondary {
+        @apply bg-white border border-primary text-primary hover:bg-primary/5 font-medium py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300;
+      }
+      .feature-card {
+        @apply bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1;
+      }
+      .faq-title {
+        @apply text-[clamp(1.5rem,3vw,2rem)] font-bold text-dark mb-6;
+      }
+      .title {
+        @apply text-xl font-bold text-dark mb-3;
+      }
+      .details {
+        @apply text-dark-gray leading-relaxed;
+      }
+      .entry-card {
+        @apply bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center;
+      }
+      .entry-icon {
+        @apply text-4xl mb-4;
+      }
+      .entry-title {
+        @apply text-lg font-bold mb-2;
+      }
+      .entry-desc {
+        @apply text-dark-gray text-sm mb-4;
+      }
+      /* 统一内容容器宽度 - 关键修复 */
+      .content-container {
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+      /* 统一板块间距 */
+      .section-padding {
+        @apply py-12;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <nav id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300 bg-white/90 backdrop-blur-md shadow-sm">
+      <div class="container content-container px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center">
+          <span class="text-xl font-bold text-primary">OpenSpeedy</span>
+        </div>
+        
+        <div class="hidden md:flex space-x-8">
+          <a href="#home" class="nav-link active">首页</a>
+          <a href="#download" class="nav-link">入口</a>
+          <a href="#introduction" class="nav-link">介绍</a>
+          <a href="#features" class="nav-link">特点</a>
+          <a href="#scenarios" class="nav-link">使用场景</a>
+          <a href="#faq" class="nav-link">常见问题</a>
+        </div>
+        
+        <button id="menu-toggle" class="md:hidden text-dark-gray hover:text-primary focus:outline-none">
+          <i class="fa-solid fa-bars text-2xl"></i>
+        </button>
+      </div>
+      
+      <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-light-gray shadow-md">
+        <div class="container content-container px-4 py-3 flex flex-col space-y-4">
+          <a href="#home" class="nav-link py-2 active">首页</a>
+          <a href="#download" class="nav-link py-2">入口</a>
+          <a href="#introduction" class="nav-link py-2">介绍</a>
+          <a href="#features" class="nav-link py-2">特点</a>
+          <a href="#scenarios" class="nav-link py-2">使用场景</a>
+          <a href="#faq" class="nav-link py-2">常见问题</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="Layout" data-v-b2cf3e0b="">
+      <div class="VPContent is-home" id="VPContent" data-v-b2cf3e0b="" data-v-a494bd1d="">
+        <div id="home" class="VPHome pt-24" data-v-a494bd1d="" data-v-d82743a8="">
+          <div class="VPHero has-image VPHomeHero" data-v-d82743a8="" data-v-fd2650d5="">
+            <div class="container content-container" data-v-fd2650d5="">
+              <div class="main" data-v-fd2650d5="">
+                <h1 class="name" data-v-fd2650d5="" style="display: flex; align-items: center; white-space: nowrap;">
+                  <span style="color:#111;">OpenSpeedy</span>
+                </h1>
+
+                <p class="text" data-v-fd2650d5="" style="line-height:1.2rem;margin:10px 0;"><span
+                    style="font-size:1.2rem;font-weight:400;"><strong>开源免费的游戏变速工具</strong></span><br /><span
+                    style="font-size:1rem;font-weight:400;">突破游戏帧率限制，提升流畅度<br>同时支持百度网盘等下载加速</span></p>
+
+              </div>
+
+              <div class="image" data-v-fd2650d5=""><div class="image-container" data-v-fd2650d5=""><div
+                    class="image-bg" data-v-fd2650d5=""></div><img class="VPImage image-src"
+                    src="./files/openspeedy.jpg" alt="OpenSpeedy" data-v-6db2186b=""
+                    style="border-radius:15px;background: #fff;padding: 5px;border: 1px solid #eee;"></div></div>
+
+          </div>
+        </div>
+
+        <div id="download" class="VPFeatures VPHomeFeatures section-padding" data-v-d82743a8="" data-v-ba861f23="">
+          <div class="container content-container" data-v-ba861f23="">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" data-v-ba861f23="">
+              <div class="item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="entry-card" data-v-837f6cca="">
+                    <h3 class="entry-title" data-v-837f6cca="">官方最新版</h3>
+                    <p class="entry-desc" data-v-837f6cca="">最新稳定版安装包<br>支持Windows 10及以上系统</p>
+                    <a href="https://openspeedy.2rdh.com" target="_blank" class="btn-primary inline-block">
+                      立即下载
+                    </a>
+                  </article>
+                </span>
+              </div>
+              
+              <div class="item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="entry-card" data-v-837f6cca="">
+                    <h3 class="entry-title" data-v-837f6cca="">电子书/影视/动漫/音乐/游戏下载</h3>
+                    <p class="entry-desc" data-v-837f6cca="">100W+电子书，2000+电影，3000+音乐<br>100+动漫漫画及App，端游单机掌机等资源</p>
+                    <a href="https://wangpanziyuan.pages.dev/" target="_blank" class="btn-primary inline-block">
+                      立即下载
+                    </a>
+                  </article>
+                </span>
+              </div>
+
+              <div class="item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="entry-card" data-v-837f6cca="">
+                    <h3 class="entry-title" data-v-837f6cca="">动漫番剧漫画追剧App下载</h3>
+                    <p class="entry-desc" data-v-837f6cca="">AGE、Omofun等动漫；拷贝、好看漫画等；网飞猫、追剧猫等追剧软件App下载</p>
+                    <a href="https://pan.xunlei.com/s/VOTW2yzmts9ecIgOnb2ujpCuA1?pwd=y9b9" target="_blank" class="btn-primary inline-block">
+                      立即下载
+                    </a>
+                  </article>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+<br>
+
+        <div id="introduction" class="VPFeatures VPHomeFeatures section-padding" data-v-d82743a8="" data-v-ba861f23="">
+          <h2 class="faq-title" style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px;">
+           OpenSpeedy介绍
+          </h2>
+          <div class="container content-container" data-v-ba861f23="">
+            <div class="items" data-v-ba861f23="" style="margin-bottom: 40px;">
+              <div class="grid-1 item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="box feature-card" data-v-837f6cca="">
+                    <p class="details" data-v-837f6cca="" style="font-size: 16px; line-height: 1.8;">
+                      OpenSpeedy是一款开源免费的游戏变速工具，专为Windows平台设计，旨在帮助玩家突破游戏帧率限制，获得更流畅的游戏体验。它通过Hook Windows系统时间函数，实现对游戏进程的加速或减速，支持自定义变速倍率，界面简洁易用，适合各类玩家。
+                    </p>
+                    <p class="details" data-v-837f6cca="" style="font-size: 16px; line-height: 1.8; margin-top: 15px;">
+                      此外，OpenSpeedy还意外地对某些网盘下载有加速效果，如百度网盘，可显著提升下载速度。软件提供了简洁直观的界面，用户可以轻松地通过滑块或输入框自定义加速倍率，支持x86和x64平台，适用于Windows 10及以上版本系统。
+                    </p>
+                  </article>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="features" class="VPFeatures VPHomeFeatures section-padding" data-v-d82743a8="" data-v-ba861f23="">
+          <h2 class="faq-title" style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px;">
+           功能特点
+          </h2>
+          <div class="container content-container" data-v-ba861f23="">
+            <div class="items" data-v-ba861f23="" style="margin-bottom: 40px;">
+              <div class="grid-1 item" data-v-ba861f23="">
+
+               <div class="grid grid-cols-1 md:grid-cols-3 gap-6" data-v-ba861f23="">
+                  <div class="item" data-v-ba861f23="">
+                    <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                      <article class="entry-card" data-v-837f6cca="">
+                        <h3 class="entry-title" data-v-837f6cca="">开源免费</h3>
+                        <p class="entry-desc" data-v-837f6cca="">遵循 GNU v3 开源协议，用户可自由下载、安装与二次开发，无需授权费用。完全透明的代码结构让用户可以放心使用，无需担心后门或恶意程序。</p>
+                      </article>
+                    </span>
+                  </div>
+                  
+                  <div class="item" data-v-ba861f23="">
+                    <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                      <article class="entry-card" data-v-837f6cca="">
+                        <h3 class="entry-title" data-v-837f6cca="">安全稳定</h3>
+                        <p class="entry-desc" data-v-837f6cca="">采用 Ring3 层 Hook 技术，仅在用户层面操作，不侵入系统内核，避免因内核Hook引发的系统不稳定或安全风险。无需管理员权限即可运行，最大限度保障系统安全。</p>
+                      </article>
+                    </span>
+                  </div>
+
+                  <div class="item" data-v-ba861f23="">
+                    <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                      <article class="entry-card" data-v-837f6cca="">
+                        <h3 class="entry-title" data-v-837f6cca="">兼容性强</h3>
+                        <p class="entry-desc" data-v-837f6cca="">支持多种主流游戏引擎，如 Unity、Unreal，兼容 x86 与 x64 平台，适用于 Windows 10 及以上系统。无论是单机游戏还是网盘客户端，都能提供稳定的变速效果。</p>
+                      </article>
+                    </span>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        <div id="scenarios" class="VPFeatures VPHomeFeatures section-padding" data-v-d82743a8="" data-v-ba861f23="">
+          <h2 class="faq-title" style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px;">
+           使用场景
+          </h2>
+          <div class="container content-container" data-v-ba861f23="">
+
+            <div class="items" data-v-ba861f23="" style="margin-bottom: 40px;">
+              <div class="grid-1 item" data-v-ba861f23="">
+
+           <div class="grid grid-cols-1 md:grid-cols-3 gap-6" data-v-ba861f23="">
+              <div class="item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="entry-card" data-v-837f6cca="">
+                    <h3 class="entry-title" data-v-837f6cca="">游戏加速</h3>
+                    <p class="entry-desc" data-v-837f6cca="">突破游戏帧率限制，提升单机游戏流畅度，适合竞速、射击等对帧率敏感的游戏，带来更流畅的操作体验。</p>
+                  </article>
+                </span>
+              </div>
+              
+              <div class="item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="entry-card" data-v-837f6cca="">
+                    <h3 class="entry-title" data-v-837f6cca="">网盘下载加速</h3>
+                    <p class="entry-desc" data-v-837f6cca="">对百度网盘等部分网盘下载有显著加速效果，可将下载速度提升至百兆级别，节省下载等待时间。</p>
+                  </article>
+                </span>
+              </div>
+
+              <div class="item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="entry-card" data-v-837f6cca="">
+                    <h3 class="entry-title" data-v-837f6cca="">模拟器加速</h3>
+                    <p class="entry-desc" data-v-837f6cca="">在模拟器环境中，通过调整系统时间函数，实现对模拟器运行速度的优化，提升操作效率。</p>
+                  </article>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+        <div id="steps" class="VPFeatures VPHomeFeatures section-padding" data-v-d82743a8="" data-v-ba861f23="">
+          <h2 class="faq-title" style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px;">
+           注册使用步骤
+          </h2>
+          <div class="container content-container" data-v-ba861f23="">
+
+            <div class="items" data-v-ba861f23="" style="margin-bottom: 40px;">
+              <div class="grid-1 item" data-v-ba861f23="">
+
+           <div class="grid grid-cols-1 md:grid-cols-3 gap-6" data-v-ba861f23="">
+              <div class="item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="entry-card" data-v-837f6cca="">
+                    <h3 class="entry-title" data-v-837f6cca="">步骤一：下载软件</h3>
+                    <p class="entry-desc" data-v-837f6cca="">访问 OpenSpeedy 官方 GitHub 仓库，下载最新版本的压缩包，无需注册账号即可免费获取。</p>
+                  </article>
+                </span>
+              </div>
+              
+              <div class="item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="entry-card" data-v-837f6cca="">
+                    <h3 class="entry-title" data-v-837f6cca="">步骤二：解压运行</h3>
+                    <p class="entry-desc" data-v-837f6cca="">将下载的文件解压到任意目录，无需安装，双击运行 OpenSpeedy.exe 即可进入主界面开始使用。</p>
+                  </article>
+                </span>
+              </div>
+
+              <div class="item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="entry-card" data-v-837f6cca="">
+                    <h3 class="entry-title" data-v-837f6cca="">步骤三：选择进程</h3>
+                    <p class="entry-desc" data-v-837f6cca="">在界面中选择目标游戏或网盘进程，通过滑块或输入框设置加速倍率，点击应用即可生效。</p>
+                  </article>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        <div id="solutions" class="VPFeatures VPHomeFeatures section-padding" data-v-d82743a8="" data-v-ba861f23="">
+          <h2 class="faq-title" style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px;">
+           打不开怎么办
+          </h2>
+          <div class="container content-container" data-v-ba861f23="">
+            <div class="items" data-v-ba861f23="" style="margin-bottom: 40px;">
+              <div class="grid-1 item" data-v-ba861f23="">
+
+           <div class="grid grid-cols-1 md:grid-cols-3 gap-6" data-v-ba861f23="">
+              <div class="item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="entry-card" data-v-837f6cca="">
+                    <h3 class="entry-title" data-v-837f6cca="">检查网络与DNS</h3>
+                    <p class="entry-desc" data-v-837f6cca="">确认网络正常，尝试切换网络或使用公共DNS，排除DNS解析错误导致的无法访问问题。</p>
+                  </article>
+                </span>
+              </div>
+              
+              <div class="item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="entry-card" data-v-837f6cca="">
+                    <h3 class="entry-title" data-v-837f6cca="">清理浏览器缓存</h3>
+                    <p class="entry-desc" data-v-837f6cca="">清除浏览器缓存、Cookie与历史记录后重新访问；检查杀毒软件或防火墙是否误拦截。</p>
+                  </article>
+                </span>
+              </div>
+
+              <div class="item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="entry-card" data-v-837f6cca="">
+                    <h3 class="entry-title" data-v-837f6cca="">使用备用渠道</h3>
+                    <p class="entry-desc" data-v-837f6cca="">前往GitHub项目页面下载最新发行版或源码自行编译，确保从官方渠道获取软件。</p>
+                  </article>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+        <div id="faq" class="VPFeatures VPHomeFeatures section-padding" data-v-d82743a8="" data-v-ba861f23="">
+          <h2 class="faq-title" style="text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px;">
+          常见问题
+          </h2>
+          <!-- 修复常见问题板块宽度 - 使用统一的content-container -->
+          <div class="container content-container" data-v-ba861f23="">
+
+            <div class="items" data-v-ba861f23="" style="margin-bottom: 40px;">
+              <div class="grid-1 item" data-v-ba861f23="">
+
+           <div class="grid grid-cols-1 md:grid-cols-3 gap-6" data-v-ba861f23="">
+              <div class="item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="entry-card" data-v-837f6cca="">
+                    <h3 class="entry-title" data-v-837f6cca="">加速效果不佳</h3>
+                    <p class="entry-desc" data-v-837f6cca="">部分游戏或网盘可能因自身机制或版本更新导致加速效果有限，建议尝试不同倍率或等待软件更新。</p>
+                  </article>
+                </span>
+              </div>
+              
+              <div class="item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="entry-card" data-v-837f6cca="">
+                    <h3 class="entry-title" data-v-837f6cca="">软件被杀毒软件误报</h3>
+                    <p class="entry-desc" data-v-837f6cca="">由于OpenSpeedy无数字签名，部分杀毒软件可能误报，建议从官方渠道下载并添加信任名单。</p>
+                  </article>
+                </span>
+              </div>
+
+              <div class="item" data-v-ba861f23="">
+                <span class="VPLink VPFeature" data-v-ba861f23="" data-v-837f6cca="" data-v-8f4dc553="">
+                  <article class="entry-card" data-v-837f6cca="">
+                    <h3 class="entry-title" data-v-837f6cca="">如何调整加速倍率</h3>
+                    <p class="entry-desc" data-v-837f6cca="">用户可在软件界面中通过滑块或输入框自定义加速倍率，根据实际需求调整至最佳效果。</p>
+                  </article>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+    <!-- 修复底部版块宽度 - 使用统一的content-container -->
+    <footer class="VPFooter section-padding" data-v-b2cf3e0b="" data-v-f7fc41f4="">
+      <div class="container content-container" data-v-f7fc41f4="">
+        <p class="copyright" data-v-f7fc41f4=""><strong>觉得很不错？那就按住Ctrl+D键组合，把本网站加入你的浏览器收藏夹吧！</strong></p>
+        <p class="copyright" data-v-f7fc41f4="">Copyright ©2025 OpenSpeedy 开源项目官网</p>
+      </div>
+    </footer>
+
+    </div>
+  </div>
+
+  <script>
+    // 导航栏滚动效果
+    window.addEventListener('scroll', function() {
+      const navbar = document.getElementById('navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('shadow-md');
+        navbar.classList.add('py-2');
+        navbar.classList.remove('py-3');
+      } else {
+        navbar.classList.remove('shadow-md');
+        navbar.classList.add('py-3');
+        navbar.classList.remove('py-2');
+      }
+      
+      // 更新导航栏激活状态
+      const sections = document.querySelectorAll('div[id]');
+      const navLinks = document.querySelectorAll('.nav-link');
+      
+      let current = '';
+      
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+        if (pageYOffset >= (sectionTop - 100)) {
+          current = section.getAttribute('id');
+        }
+      });
+      
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${current}`) {
+          link.classList.add('active');
+        }
+      });
+    });
+    
+    // 移动端菜单切换
+    document.getElementById('menu-toggle').addEventListener('click', function() {
+      const mobileMenu = document.getElementById('mobile-menu');
+      mobileMenu.classList.toggle('hidden');
+    });
+    
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        // 关闭移动端菜单（如果打开）
+        document.getElementById('mobile-menu').classList.add('hidden');
+        
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
